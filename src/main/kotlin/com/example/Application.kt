@@ -12,13 +12,26 @@ import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import io.ktor.http.*
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.http.*
+import io.ktor.serialization.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
 
-
+@Serializable
+data class Movie(val title: String)
 
 fun main() {
+    val log = LoggerFactory.getLogger("ApplicationKt")
+
     embeddedServer(Netty, port = 8080) {
         install(DefaultHeaders)
-        install(CallLogging)
+        install(CallLogging) {
+            level = org.slf4j.event.Level.DEBUG
+        }
         install(ContentNegotiation) {
             json(Json {
                 prettyPrint = true
@@ -33,18 +46,28 @@ fun main() {
         }
         routing {
             get("/") {
-                call.respond(ThymeleafContent("index", null))
+                try {
+                    call.respond(ThymeleafContent("index", emptyMap<String, Any>()))
+                } catch (e: Exception) {
+                    log.error("Error serving / route", e)
+                    call.respond(HttpStatusCode.InternalServerError, "Internal Server Error")
+                }
             }
             get("/movies") {
-                val movies = listOf(
-                    Movie("The Shawshank Redemption"),
-                    Movie("The Godfather"),
-                    Movie("The Dark Knight"),
-                    Movie("Pulp Fiction"),
-                    Movie("Forrest Gump"),
-                    Movie("Inception")
-                )
-                call.respond(movies)
+                try {
+                    val movies = listOf(
+                        Movie("The Shawshank Redemption"),
+                        Movie("The Godfather"),
+                        Movie("The Dark Knight"),
+                        Movie("Pulp Fiction"),
+                        Movie("Forrest Gump"),
+                        Movie("Inception")
+                    )
+                    call.respond(movies)
+                } catch (e: Exception) {
+                    log.error("Error serving /movies route", e)
+                    call.respond(HttpStatusCode.InternalServerError, "Internal Server Error" +e)
+                }
             }
         }
     }.start(wait = true)

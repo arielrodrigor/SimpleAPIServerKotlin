@@ -1,5 +1,7 @@
 plugins {
     kotlin("jvm") version "1.8.0"
+    kotlin("plugin.serialization") version "1.6.21" // Añadir el plugin de serialización
+
     application
 }
 
@@ -22,6 +24,7 @@ dependencies {
     implementation("io.ktor:ktor-server-call-logging-jvm:2.3.2")
     implementation("io.ktor:ktor-server-content-negotiation:2.0.0") // Para ContentType
     implementation("io.ktor:ktor-serialization-kotlinx-json:2.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2") // Dependencia de serialización de Kotlin
     testImplementation("io.ktor:ktor-server-tests-jvm:2.3.2")
     testImplementation(kotlin("test"))
 }
